@@ -15,7 +15,6 @@
 #include "Vocab.h"
 #include "IO.h"
 #include "result.h"
-#include "HE.h"
 
 
 using std::string;
@@ -29,9 +28,6 @@ public:
 
 	/// pointer to the vocabulary using
     Vocab* voc;
-    /// pointer to the hamming embedding instance
-    HE* he;
-
 
 	/// keeps different index directories. This implementaion can load multiple indexes when searching.
     vector<string> idxList;
@@ -49,7 +45,7 @@ public:
     float* norm;
 
 	/// init variables
-    SearchEngine(Vocab* vocab, HE* he_assign);
+    SearchEngine(Vocab* vocab);
 
 	///deletes things newed
     ~SearchEngine();
@@ -97,26 +93,6 @@ private:
     /// helper function of update. this function init nrom[i]
     static void norm_task(void* args, int tid, int i, pthread_mutex_t& mutex);
 
-
-	/**
-	@brief search with Hamming Embedding and Weak Geometric Consistency
-	@param entrylist pointer to array of entries
-	@param n number of entries
-	@param query_norm norm of the query image
-	@param query_name file name of the query. used only for debug
-	@return a vector of Result
-	*/
-    vector<Result*> search_he_wgc(Entry* entrylist, int n, float query_norm, string query_name);
-
-	/**
-	@brief search with Hamming Embedding and Extended Weak Geometric Consistency
-	@param entrylist pointer to array of entries
-	@param n number of entries
-	@param query_norm norm of the query image
-	@param query_name file name of the query. used only for debug
-	@return a vector of Result
-	*/
-    vector<Result*> search_he_ewgc(Entry* entrylist, int n, float query_norm, string query_name);
 
 	/**
 	@brief calculate norm for an image

@@ -8,6 +8,7 @@
 #include "ivfpq_new.h"
 #include "config.h"
 #include "Index.h"
+#include "SearchEngine.h"
 
 
 using std::string;
@@ -85,45 +86,30 @@ int main(int argc, char* argv[])
             delete voc;
             break;
         }
-        /*
         case 3: // online search
         {
-            // number of elements to be returned.
-            con.k          = params->GetInt ("k");
-            // number of cell visited per query.
-            con.w = params->GetInt("w");
-
+            con.coarsek             = params->GetInt("coarsek");
             con.query_desc          = params->GetStr ("query_desc");
-            con.ht                  = params->GetInt ("ht");
-            con.search_mode         = params->GetInt ("search_mode");
             con.dim                 = params->GetInt ("dim");
             con.bf                  = params->GetInt ("bf");
             con.num_layer           = params->GetInt ("num_layer");
-
-            con.p_mat               = params->GetStr ("pmat");
-            con.im_sz               = params->GetInt ("im_size");
-
+            // number of elements to be returned.
             con.num_ret             = params->GetInt ("num_ret");
+            // number of cell visited per query.
             con.ma                  = params->GetInt ("ma");
 
-
-            Vocab* voc = new Vocab(con.bf, con.num_layer, con.dim);
+            Vocab* voc = new Vocab(con.coarsek, 1, con.dim);
             voc->loadFromDisk(id + ".out/vk_words/");
 
-            HE* he = new HE(con.he_len, con.dim, con.p_mat, voc->num_leaf, con.ht);
-            he->loadMedian(id + ".out/he.median");
-
-            SearchEngine* engine = new SearchEngine(voc, he);
+            SearchEngine* engine = new SearchEngine(voc);
             engine->loadIndexes(id + ".out/index/");
             engine->search_dir(con.query_desc, id + ".out/result", con.num_ret);
 
             delete engine;
             delete voc;
-            delete he;
 
             break;
         }
-        */
         default:
         {
             printf("Un-defined operation! Exitting ...\n");

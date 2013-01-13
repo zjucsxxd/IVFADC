@@ -27,7 +27,7 @@ struct Entry
 {
     /// id of entry is tricky here. serves as both id and word_id
     unsigned int id:32;          // id. taking 32 bits can index up to 4 trillion images
-    int     residual_id;
+    unsigned int residual_id;
 
 	/**
 	@ default constructor which does nothing but allocates memory.
@@ -44,7 +44,7 @@ struct Entry
 	*/
     ~Entry(){}
 
-    void set(unsigned int id_l, int residual_id_l);
+    void set(unsigned int id_l, unsigned int residual_id_l);
 	
     /**
     @brief print the content of the entry to stdout

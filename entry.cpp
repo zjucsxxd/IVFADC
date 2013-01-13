@@ -24,7 +24,7 @@ Entry::Entry(const Entry& p) // copy constructor
     this->residual_id = p.residual_id;
 }
 
-void Entry::set(unsigned int id_l, int residual_id_l)
+void Entry::set(unsigned int id_l, unsigned int residual_id_l)
 {
     id = id_l;
     residual_id = residual_id_l;
@@ -61,7 +61,7 @@ void Entry::write(FILE* fout)
 void Entry::read(FILE* fin)
 {
     unsigned int *items = new unsigned int[2];
-    assert(1 == fread(items, sizeof(unsigned int), 2, fin));
+    assert(2 == fread(items, sizeof(unsigned int), 2, fin));
 
     id     = items[0];
     residual_id = items[1];

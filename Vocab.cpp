@@ -91,12 +91,18 @@ void Vocab::quantize2leaf(float* v, int* out, int n, int m)
 {
     memset(out, 0, sizeof(int)*n); // init out to 0
     int* out_hie = new int[l];
+    std::cout << "n:" << n << "m:" << m << std::endl;
     for(int i = 0; i < n; i++)
     {
         quantize_once(v + i*(d+m) + m, out_hie);
+        //std::cout << "i:" << i << std::endl;
         // turn hierarchical quantization result to flat quantization result
         for(int j = 0; j < l; j++)
+        {
+            //std::cout << out_hie[j];
             out[i] = out[i]*k + out_hie[j];
+        }
+        //std::cout << "\n";
     }
 
     delete[] out_hie;

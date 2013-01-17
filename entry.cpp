@@ -30,6 +30,12 @@ void Entry::set(unsigned int id_l, unsigned int residual_id_l)
     residual_id = residual_id_l;
 }
 
+void Entry::set(unsigned int id_l, unsigned int residual_id_l, float* residual_vec_l)
+{
+    id = id_l;
+    residual_id = residual_id_l;
+    residual_vec = residual_vec_l;
+}
 
 /**
 @brief print the content of the entry to stdout

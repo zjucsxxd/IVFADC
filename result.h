@@ -31,7 +31,7 @@ struct Result
 	/// comparer function which is used for sorting results
     static bool compare(Result* r1, Result* r2)
     {
-        return r1->score > r2->score;
+        return r1->score < r2->score;
     }
 };
 

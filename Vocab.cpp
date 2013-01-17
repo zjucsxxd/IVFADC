@@ -124,29 +124,29 @@ static void quanti_task(void* args, int tid, int i, pthread_mutex_t& mutex)
     for(int m = 0; m < t->ma; m++)
     {
         int idx = i*t->ma + m;
-        t->entrylist[idx].set( out[m], -1);
+        float* residual = new float[t->d];
+        for(int j=0; j < t->d; j++)
+        {
+            residual[j] = *(t->feat+pos+j) - *(t->voc->vec+out[m]*(t->m+t->d)+j);
+        }
+        t->entrylist[idx].set( out[m], -1, residual);
     }
 
     delete[] out;
 }
 
-Entry* Vocab::quantizeFile(float* feat, int& len, int nt, int ma, int d)
+Entry* Vocab::quantizeFile(float* feat, int& len, int nt, int ma, int d, int n)
 {
     std::cout << "enter quantizefile." << std::endl;
-    len = ma;
+    len = n*ma;
 
     int m = 0;
-    Entry* entrylist = new Entry[ma];
+    Entry* entrylist = new Entry[n*ma];
 
     q_file_arg args = {feat, this, d, m, ma, entrylist};
-    MultiThd::compute_tasks(1, nt, &quanti_task, &args);
+    MultiThd::compute_tasks(n, nt, &quanti_task, &args);
 
-    /*
-    for(int i=0;i<n*ma;i++)
-    {
-        std::cout << i << " word id:" << (entrylist+i)->id << std::endl;
-    }
-    */
+
     std::cout << "finish compute tasks." << std::endl;
     std::cout << "delete feat" << std::endl;
     return entrylist;

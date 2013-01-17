@@ -105,7 +105,7 @@ public:
     @param ma multiple assignments factor
     @return pointer to a entrylist
     */
-    Entry* quantizeFile(float* feat,int& len, int nt, int ma, int d);
+    Entry* quantizeFile(float* feat,int& len, int nt, int ma, int d, int n);
 
 
     /**

@@ -28,6 +28,7 @@ public:
 
 	/// pointer to the vocabulary using
     Vocab* voc;
+    Vocab* rvoc;
 
 	/// keeps different index directories. This implementaion can load multiple indexes when searching.
     vector<string> idxList;
@@ -45,7 +46,7 @@ public:
     float* norm;
 
 	/// init variables
-    SearchEngine(Vocab* vocab);
+    SearchEngine(Vocab* vocab, Vocab* rvocab);
 
 	///deletes things newed
     ~SearchEngine();

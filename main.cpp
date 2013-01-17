@@ -60,6 +60,11 @@ int main(int argc, char* argv[])
             con.attempts            = params->GetInt ("attempts");
             con.bf                  = params->GetInt("bf");
             con.num_layer           = params->GetInt("num_layer");
+
+            //con.coarsek             = params->GetInt("coarsek");
+            //Vocab* voc = new Vocab(con.coarsek, 1, con.dim);
+            //voc->loadFromDisk(id + ".out/vk_words/");
+            
             ivfpq_new* ivfpq = new ivfpq_new(con);
             ivfpq->train_coarse_codebook();
             ivfpq->train_residual_codebook();
@@ -68,9 +73,9 @@ int main(int argc, char* argv[])
         case 2: // quantization 
         {
             con.dim                 = params->GetInt ("dim");
-            con.coarsek       = params->GetInt("coarsek");
+            con.coarsek             = params->GetInt("coarsek");
             // index feature dir
-            con.index_desc    = params->GetStr("index_desc");
+            con.index_desc          = params->GetStr("index_desc");
 
             con.bf                  = params->GetInt("bf");
             Vocab* voc = new Vocab(con.coarsek, 1, con.dim);
@@ -81,7 +86,7 @@ int main(int argc, char* argv[])
             rvoc->loadFromDisk(id + ".out/vk_words_residual/");
 
             IO::mkdir(id + ".out/index/");
-            Index::indexFiles(voc, rvoc, con.index_desc, ".feat", id + ".out/index/" + id + "/", con.nt);
+            Index::indexFiles(voc, rvoc, con.index_desc, ".vlad", id + ".out/index/" + id + "/", con.nt);
 
             delete voc;
             break;
@@ -98,10 +103,18 @@ int main(int argc, char* argv[])
             // number of cell visited per query.
             con.ma                  = params->GetInt ("ma");
 
+            // loading coarse codebook.
             Vocab* voc = new Vocab(con.coarsek, 1, con.dim);
             voc->loadFromDisk(id + ".out/vk_words/");
+            //for(int i =0; i < voc->num_leaf*con.dim; i++)
+            //    std::cout << voc->vec[i] << " ";
+            // loading residual codebook
+            Vocab* rvoc = new Vocab(con.bf, 1, con.dim);
+            rvoc->loadFromDisk(id + ".out/vk_words_residual/");
+            //for(int i =0; i < rvoc->num_leaf*con.dim; i++)
+            //    std::cout << rvoc->vec[i] << " ";
 
-            SearchEngine* engine = new SearchEngine(voc);
+            SearchEngine* engine = new SearchEngine(voc, rvoc);
             engine->loadIndexes(id + ".out/index/");
             engine->search_dir(con.query_desc, id + ".out/result", con.num_ret);
 

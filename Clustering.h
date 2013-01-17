@@ -94,6 +94,7 @@ public:
         for(int i = 0; i < para->attempts; i++)
         {
             float cost_tmp = 0.0f;
+            cout << "start kmeans once" << endl;
             kmeans_once(para->data, centers_tmp, para->n, para->d, para->k, para->iter, cost_tmp, para->nt);
             printf("Attempts: %u, cost: %e\n", i, cost_tmp);
 
@@ -157,6 +158,7 @@ private:
         //int* initial_center_idx = init_rand(n, k);
         int* initial_center_idx = init_kpp(n, k, d, data);
 
+        cout << "init centers" << endl;
         // init centers with random generated index
         for(int i = 0; i < k; i++)
             for(int j = 0; j<d; j++)

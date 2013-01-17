@@ -4,7 +4,9 @@
 #include "util.h"
 #include "Clustering.h"
 #include <iostream>
+#include <vector>
 
+using std::vector;
 ivfpq_new::ivfpq_new( Config& con_l )
 {
     coarsek = con_l.coarsek;
@@ -62,20 +64,33 @@ void ivfpq_new::train_coarse_codebook()
 
         // sampling feature matrix
         int ptsPerCenter = 50; // ptsPerCenter * numOfCenters points will be sampled for generating the vocab
-        string mtrx = working_dir + "matrix/M.l0.n0";
-        IO::genMtrx (train_desc, mtrx, ptsPerCenter*max(k, coarsek) );
+        //string mtrx = working_dir + "matrix/M.l0.n0";
+        //IO::genMtrx (train_desc, mtrx, ptsPerCenter*max(k, coarsek) );
 
         // kmeans on M.l0.n0 to get k centers
-        int  n = 0, d = 0; // row & col of the matrix file
-        float* data = IO::loadFMat(working_dir + "matrix/M.l0.n0", n, d, limit_point);
+        //int  n = 0, d = 0; // row & col of the matrix file
+        //float* data = IO::loadFMat(working_dir + "matrix/M.l0.n0", n, d, limit_point);
+        float* data;
+        int n=0, d=0;
+        vector<string*> img_db;
+        // 
+        std::cout << "start load vlad..." << std::endl;
+        IO::load_vlad(train_desc, &data, &img_db, &n, &d);
+        std::cout << "load vlad over." << std::endl;
 
-        //coa_centroids  = new float(d * coarsek);
-        
+        std::cout << "normalize..." << std::endl;
+        for(int i=0; i < n; i++)
+        {
+            Util::normalize(data+i*d, d);
+        }
+        std::cout << "normalize finished..." << std::endl;
+
         Vocab* voc = new Vocab(coarsek, 1, d); // new the location to keep the centers
         kmeans_par k_par = {data, n, d, coarsek, iter, attempts, nt, voc->vec};
         Clustering::kmeans(&k_par);
         coa_centroids = voc->vec;
         voc->write2Disk(working_dir + "vk_words/");
+        //IO::write_img_db(img_db, working_dir+"vk_words/wordlist.txt");
         delete[] data;
 }
 
@@ -85,7 +100,19 @@ void ivfpq_new::train_residual_codebook()
     int  n = 0, d = 0; // row & col of the matrix file
     string working_dir = "./"+dataId+".out/";
     //IO::genMtrx (train_desc, mtrx, ptsPerCenter*ROUND(pow(k, l)));
-    float* data = IO::loadFMat(working_dir + "matrix/M.l0.n0", n, d, con.T);
+    //float* data = IO::loadFMat(working_dir + "matrix/M.l0.n0", n, d, con.T);
+
+
+    float* data;
+    vector<string*> img_db;
+    IO::load_vlad(train_desc, &data, &img_db, &n, &d);
+    std::cout << "normalize..." << std::endl;
+    for(int i=0; i < n; i++)
+    {
+        Util::normalize(data+i*d, d);
+    }
+    std::cout << "normalize finished..." << std::endl;
+
 
     // do knn, assign the descriptors to cluster
 
@@ -100,6 +127,14 @@ void ivfpq_new::train_residual_codebook()
     std::cout << "residual k:" << k << std::endl;
     Vocab* voc = new Vocab(k, 1, d); // new the location to keep the centers
 
+    /*
+    for(int i=0; i<n;i++)
+        for(int j=0; j<d;j++)
+        {
+            std::cout << residual[i*d+j] << " ";
+        }
+    */
+
     kmeans_par k_par = {residual, n, d, k, iter, attempts, nt, voc->vec};
     Clustering::kmeans(&k_par);
     /*
@@ -112,6 +147,8 @@ void ivfpq_new::train_residual_codebook()
         }
     }
     */
+    std::cout << "residual centroid write to disk" << std::endl;
     voc->write2Disk(working_dir + "vk_words_residual/");
     delete[] residual;
 }
+

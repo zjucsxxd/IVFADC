@@ -53,9 +53,10 @@ struct norm_args
 extern Config con;
 
 /// init variables
-SearchEngine::SearchEngine(Vocab* vocab)
+SearchEngine::SearchEngine(Vocab* vocab, Vocab* rvocab)
 {
     this->voc = vocab;
+    this->rvoc = rvocab;
 
     size_voc = voc->num_leaf;
 
@@ -96,7 +97,7 @@ void SearchEngine::loadIndexes(string dir)
     for(unsigned int i = 0; i < idxList.size(); i++) // load all indexes under dir
         loadSingleIndex(idxList[i]);
     // update other fields: idf, norms
-    update();
+    //update();
 }
 
 /**
@@ -110,50 +111,98 @@ void SearchEngine::loadIndexes(string dir)
 void SearchEngine::search_dir(string dir, string out_file, int topk)
 {
     printf("Online search.\n");
-    vector<string> filelist = IO::getFileList(dir, con.extn, 1, 1);
+    //vector<string> filelist = IO::getFileList(dir, con.extn, 1, 1);
 
     FILE* fout_result = fopen(out_file.c_str(), "w");
     IO::chkFileErr(fout_result, out_file);
 
+    float* data;
+    int n=0, d=0;
+    vector<string*> img_db;
+    IO::load_vlad(dir, &data, &img_db, &n, &d);
+    std::cout << "normalize..." << std::endl;
+    for(int i=0; i < n; i++)
+    {
+        Util::normalize(data+i*d, d);
+    }
+    std::cout << "normalize finished..." << std::endl;
 
-    for(unsigned int i = 0; i < filelist.size(); i++)//loop for every query im in directory
+
+    // calculate result vectors' residual.
+    float* residual =  new float[con.dim];
+    vector<Result*> ret;
+    for(unsigned int i = 0; i < n; i++)//loop for every query im in directory
     {
         printf("\r%d", i+1); fflush(stdout);
-        string filename = Util::parseFileName(filelist[i]);
+        //string filename = Util::parseFileName(*(img_db[i]));
+        string filename = *(img_db[i]);
         fprintf(fout_result, "%s", filename.c_str());
 
-        // quantize descriptors
-        int n;
-        Entry* entrylist = voc->quantizeFile(filelist[i], he, n, con.nt, con.ma);
+        float* feature = data+i*d;
+        int* coarse_res;
+        // quantize descriptors to coarse codebook
+        // enrtylist is the coarse quantize result list
+        int len;
+        Entry* entrylist = voc->quantizeFile(feature, len, con.nt, con.ma, con.dim);
+        // result entry for coarse search.
+        // for each res in entry list, get res vec accroding to inverted index.
+        // load query features.
+        // iterator vectors in the word cell.
+        // word_pos is the start word cell position for query i.
+        int j = 0;
+        int m = 0;
+        int word_pos = j*con.ma;
+        for(int g=0; g < (con.ma); g++)
+        {
+            int coa_word_id = entrylist[word_pos+g].id;
+
+            std::cout << "coa_word:" << coa_word_id << std::endl;
+            //Entry* j_entrylist = index[coa_word_id];            
+            // coarse_vec is the visual word the query belongs to.
+            float* coarse_vec = voc->vec+(d*coa_word_id); 
+            for(int x=0;x<con.dim;x++)
+            {
+                residual[x] = *(feature+j*(m+d)+m+x) - coarse_vec[x];
+                //std::cout << residual[x] << " ";
+            }
+            for(int f=0; f < num_entries[coa_word_id]; f++)
+            {
+                // read result entries number. 
+                Result* tmp = new Result;
+                Entry res_tmp = (index[coa_word_id][f]);
+                // get result vector's residual vector.
+                float* res_residual = rvoc->vec+(d*res_tmp.residual_id);
 
 
-        // calc the norm for the query image
-        float q_norm = getNorm(entrylist, n);
+                Util::normalize(residual, d);
+                Util::normalize(res_residual, d);
+                tmp->score = Util::dist_l2_sq(residual, res_residual, d);
+                //std::cout << "score: " << tmp->score << std::endl;
+                tmp->im_id = res_tmp.id; 
+                ret.push_back(tmp);
 
-
-        vector<Result*> ret;
+            }
+        }
 
         std::sort(ret.begin(), ret.end(), Result::compare);
-
-
         for(vector<Result*>::iterator it = ret.begin(); it != min(ret.end(), ret.begin()+topk); it++)
         {
-            fprintf(fout_result, " %s %.4f ", im_db[(*it)->im_id].c_str(), (*it)->score);
+            fprintf(fout_result, " %s %.4f ", (img_db[(*it)->im_id])->c_str(), (*it)->score);
         }
         fprintf(fout_result, "\n");
-
 
         for(unsigned int j = 0; j < ret.size(); j++)
             delete ret[j];
         ret.clear();
-
         delete[] entrylist;
-    }
+    } // end for i
+
+
+    delete[] residual;
 
     printf("\n");
 
     fclose(fout_result);
-    filelist.clear();
 }
 
 

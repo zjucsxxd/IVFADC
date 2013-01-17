@@ -14,6 +14,7 @@
 #include <vector>
 #include <cstring>
 #include <iostream>
+#include <fstream>
 #include <unistd.h>  
 #include <fcntl.h>
 
@@ -23,6 +24,7 @@
 
 using std::string;
 using std::vector;
+using std::fstream;
 
 extern Config con;
 
@@ -633,6 +635,76 @@ public:
 
         delete[] vec;
         delete[] header;
+    }
+
+    static void load_vlad(string train_desc, float** data, vector<string*>* img_db , int* n, int* d)
+    {
+
+        vector<string> filelist =  getFileList(train_desc, "vlad", 0, 1);
+        vector<string> info_filelist =  getFileList(train_desc, "info", 0, 1);
+        vector<float*> datalist;
+        int total_num = 0;
+        int dims = 0; 
+        std::cout << "filelist size:" << filelist.size() << std::endl;
+        int* info = new int[filelist.size()];
+        for(unsigned int k=0;k < filelist.size(); k++)
+        {
+            fstream fin;
+            fstream fin_info;
+            fin.open(filelist[k].c_str(), std::ios::in);
+            fin_info.open(info_filelist[k].c_str(), std::ios::in);
+
+            int vec_num,dim;
+            fin >> vec_num >> dim;
+            std::cout << vec_num << " " << dim << std::endl;
+            info[k] = vec_num;
+            total_num += vec_num;
+            dims = dim;
+            float* tmp = new float[dim*(vec_num)];
+            for(int i=0; i < vec_num; i++)
+            {
+                string* name_tmp = new string;
+                for(int j=0; j < dim; j++)
+                {
+                    fin >> tmp[j+i*dim];
+                }
+                fin_info >> *name_tmp;
+                img_db->push_back(name_tmp);
+            }
+            datalist.push_back(tmp);
+            fin.close();
+            fin_info.close();
+        }
+
+        *n = total_num;
+        *d = dims;
+        *data = new float[dims*total_num];
+        int counter = 0;
+        int dsize = datalist.size();
+        for(int g=0; g < dsize;g++ )
+        {
+            std::cout << info[g] << " " << std::endl;
+            for(int i=0; i< info[g];i++)
+            {
+                for(int j=0; j<dims;j++)
+                {
+                    //std::cout << datalist[g] << std::endl;
+                    (*data)[j+dims*counter] = datalist[g][j+dims*i];
+                }
+                counter += 1;
+            }
+            delete[] datalist[g];
+        }
+    }
+    static void write_img_db(vector<string*> img_db, string filename)
+    {
+        fstream out;
+        out.open(filename.c_str(), std::ios::out); 
+        out << img_db.size() << "\n";
+        for(unsigned int i=0; i < img_db.size(); i++)
+        {
+            out << *(img_db[i]) << "\n";            
+        }
     }
 };
 

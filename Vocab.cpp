@@ -40,8 +40,6 @@ struct q_file_arg // quantization file args
     float* feat;
     /// pointer to vocabulary
     Vocab* voc;
-    /// pointer to Hamming Embedding
-    HE* he;
     /// dimension of feature
     int d;
     /// number of auxiliary information for feature
@@ -111,39 +109,46 @@ void Vocab::quantize2leaf(float* v, int* out, int n, int m)
 
 static void quanti_task(void* args, int tid, int i, pthread_mutex_t& mutex)
 {
+    //std::cout << "enter quanti task function." << std::endl;
     q_file_arg* t = (q_file_arg*) args;
 
     int* out = new int[t->ma];
+    //int* residual_out = new int[t->ma];
     int pos = i* (t->d + t->m);
 
-    //t->voc->quantize2leaf(t->feat+pos, out, 1, t->m);
+    //std::cout << "start quantize2leaf" << std::endl;
+    // assign feat descriptors to coarse codebook
     t->voc->quantize2leaf(t->feat+pos, out, 1, t->m, t->ma);
+    //std::cout << "end quantize2leaf" << std::endl;
 
-    /*
     for(int m = 0; m < t->ma; m++)
     {
         int idx = i*t->ma + m;
-        t->entrylist[idx].set(t->feat[pos], t->feat[pos+1], out[m],
-                              t->feat[pos + 2], t->feat[pos + 3],
-                              t->he->genCode(t->feat + pos, out[m], t->m));
+        t->entrylist[idx].set( out[m], -1);
     }
-    */
 
     delete[] out;
 }
 
-Entry* Vocab::quantizeFile(string file, HE* he, int& len, int nt, int ma)
+Entry* Vocab::quantizeFile(float* feat, int& len, int nt, int ma, int d)
 {
-    int n, m, d;
-    float* feat = IO::readFeatFile(file, n, m, d);
-    len = n * ma;
+    std::cout << "enter quantizefile." << std::endl;
+    len = ma;
 
-    Entry* entrylist = new Entry[n*ma];
+    int m = 0;
+    Entry* entrylist = new Entry[ma];
 
-    q_file_arg args = {feat, this, he, d, m, ma, entrylist};
-    MultiThd::compute_tasks(n, nt, &quanti_task, &args);
+    q_file_arg args = {feat, this, d, m, ma, entrylist};
+    MultiThd::compute_tasks(1, nt, &quanti_task, &args);
 
-    delete[] feat;
+    /*
+    for(int i=0;i<n*ma;i++)
+    {
+        std::cout << i << " word id:" << (entrylist+i)->id << std::endl;
+    }
+    */
+    std::cout << "finish compute tasks." << std::endl;
+    std::cout << "delete feat" << std::endl;
     return entrylist;
 }
 
@@ -158,8 +163,8 @@ void Vocab::loadFromDisk(string dir)
     for(int i = 0; i < l; i++)
     {
         float* tmpmat = IO::loadFMat(dir + "vocab.l" + Util::num2str(i+1), row, col, -1);
-        std::cout << row << " " << col << std::endl;
-        std::cout << k << " " << ROUND(pow(k, i+1)) << std::endl;
+        //std::cout << row << " " << col << std::endl;
+        //std::cout << k << " " << ROUND(pow(k, i+1)) << std::endl;
 
         assert(row == (int)ROUND(pow(k, i+1)) && col == d);
         memcpy(vec + sp[i+1], tmpmat, row*col*sizeof(float));

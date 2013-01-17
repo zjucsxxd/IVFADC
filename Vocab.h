@@ -100,13 +100,12 @@ public:
     /**
     @brief quantize a feature file to entry lists
     @param file file path of feature file to quantize
-    @param he pointer to Hamming Embedding
     @param len number of entries for the quantized feature file
     @param nt number of cores to use
     @param ma multiple assignments factor
     @return pointer to a entrylist
     */
-    Entry* quantizeFile(string file, HE* he, int& len, int nt, int ma);
+    Entry* quantizeFile(float* feat,int& len, int nt, int ma, int d);
 
 
     /**

@@ -29,8 +29,10 @@ using std::set;
 /// arguments used to index files with multi-threading
 struct index_args
 {
+    int dim;
+    float* feature;
 	/// name list of feature file to index
-    vector<string>& namelist;   
+    vector<string*>& namelist;   
     /// vocabulary used to quantize feature
     Vocab* voc;                 
     Vocab* rvoc;

@@ -21,6 +21,7 @@ including string manipulation, math operations as well as other common functions
 #include <stdio.h>
 
 #include <string>
+#include <iostream>
 #include <map>
 #include <cmath>
 #include <dirent.h>
@@ -235,7 +236,10 @@ public:
     {
         float dist = 0.0f;
         for(int i = 0; i<d; i++)
+        {
             dist += (a[i] - b[i])*(a[i] - b[i]);
+            //std::cout << dist << std::endl;
+        }
 
         return dist;
     }

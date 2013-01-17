@@ -1,4 +1,6 @@
 #include "Index.h"
+#include <fstream>
+using std::fstream;
 
 void Index::indexFiles(Vocab* voc, Vocab* rvoc, string feat_dir, string file_extn, string idx_dir, int nt)
 {
@@ -14,19 +16,34 @@ void Index::indexFiles(Vocab* voc, Vocab* rvoc, string feat_dir, string file_ext
     assert(fout_idx && fout_nl);
 
 
-    vector<string> filelist = IO::getFileList(feat_dir, file_extn, 1, 1);
-    int tot_ims = filelist.size();
+    int tot_ims = 0;
+    int dim = 0;
+    float* feature;
+    vector<string*> namelist;
+    IO::load_vlad(feat_dir, &feature, &namelist, &tot_ims, &dim);
+    std::cout << "normalize..." << std::endl;
+    for(int i=0; i < tot_ims; i++)
+    {
+        Util::normalize(feature+i*dim, dim);
+    }
+    std::cout << "normalize finished..." << std::endl;
+
+
+
     fwrite(&tot_ims, sizeof(int), 1, fout_idx);
     fprintf(fout_nl, "%d\n", tot_ims);
 
 
-    index_args args = {filelist, voc, rvoc, fout_idx, fout_nl};
+    index_args args = {dim, feature, namelist, voc, rvoc, fout_idx, fout_nl};
     MultiThd::compute_tasks(tot_ims, nt, &index_task, &args);
     printf("\n");
 
     fclose(fout_idx);
     fclose(fout_nl);
-    filelist.clear();
+    for(unsigned int i=0; i < namelist.size(); i++)
+    {
+        delete namelist[i];
+    }
 
     gen_idx_sz_file(idx_file, idx_sz, voc->num_leaf);
 }
@@ -37,12 +54,15 @@ void Index::index_task(void* args, int tid, int i, pthread_mutex_t& mutex)
 
     //std::cout << "enter index task fun..." << std::endl;
     index_args* arguments = (index_args*) args;
-    string filename = arguments->namelist[i];
+    string filename = *(arguments->namelist[i]);
+    float* feature = i*arguments->dim+arguments->feature;
     string shortname = Util::parseFileName(filename);
-    //std::cout << "shortname:" << shortname << std::endl;
+    std::cout << "shortname:" << shortname << std::endl;
 
-    int n, m, d;
-    float* feature = IO::readFeatFile(filename, n, m, d);
+    int m = 0, n = 1, d=0;
+    d = arguments->dim;
+
+    //std::cout << "m:" << m << "n:" << n << "d:" << d << std::endl;
 
     int* quanti_result = new int[n];
     int* residual_result = new int[n];
@@ -84,7 +104,6 @@ void Index::index_task(void* args, int tid, int i, pthread_mutex_t& mutex)
     /// end of write sync
 
     //std::cout << "delete new space..." << std::endl;
-    delete[] feature;
     delete[] entrylist;
     delete[] quanti_result;
     delete[] residual_vec;

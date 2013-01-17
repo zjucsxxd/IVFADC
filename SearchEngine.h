@@ -67,7 +67,7 @@ public:
 	@return void
 	@remark this function will search images under dir one by one
 	*/
-    void search_dir(string dir, string out_file, int topk);
+    void search_dir(string dir, string out_file, string out_file2, int topk);
 
 
 private:

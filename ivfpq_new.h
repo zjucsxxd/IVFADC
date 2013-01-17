@@ -41,4 +41,5 @@ class ivfpq_new
         void train_coarse_codebook();
         void train_residual_codebook();
          
+        void cal_word_dis(float* codebook, int n_l, int dim_l, string filename);
 };

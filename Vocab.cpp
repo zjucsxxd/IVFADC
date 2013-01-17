@@ -89,7 +89,7 @@ void Vocab::quantize2leaf(float* v, int* out, int n, int m)
 {
     memset(out, 0, sizeof(int)*n); // init out to 0
     int* out_hie = new int[l];
-    std::cout << "n:" << n << "m:" << m << std::endl;
+    //std::cout << "n:" << n << "m:" << m << std::endl;
     for(int i = 0; i < n; i++)
     {
         quantize_once(v + i*(d+m) + m, out_hie);
@@ -137,7 +137,7 @@ static void quanti_task(void* args, int tid, int i, pthread_mutex_t& mutex)
 
 Entry* Vocab::quantizeFile(float* feat, int& len, int nt, int ma, int d, int n)
 {
-    std::cout << "enter quantizefile." << std::endl;
+    std::cout << "enter quantizefile for " << n << " files." << std::endl;
     len = n*ma;
 
     int m = 0;
@@ -148,7 +148,6 @@ Entry* Vocab::quantizeFile(float* feat, int& len, int nt, int ma, int d, int n)
 
 
     std::cout << "finish compute tasks." << std::endl;
-    std::cout << "delete feat" << std::endl;
     return entrylist;
 }
 

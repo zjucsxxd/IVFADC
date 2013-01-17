@@ -57,7 +57,7 @@ void Index::index_task(void* args, int tid, int i, pthread_mutex_t& mutex)
     string filename = *(arguments->namelist[i]);
     float* feature = i*arguments->dim+arguments->feature;
     string shortname = Util::parseFileName(filename);
-    std::cout << "shortname:" << shortname << std::endl;
+    std::cout << "\nshortname:" << shortname << std::endl;
 
     int m = 0, n = 1, d=0;
     d = arguments->dim;
@@ -112,7 +112,7 @@ void Index::index_task(void* args, int tid, int i, pthread_mutex_t& mutex)
     if ( (i+1) % 10 == 0)
     {
         pthread_mutex_lock (&mutex);
-        printf("\r%d", i+1); fflush(stdout);
+        printf("\r%d ", i+1); fflush(stdout);
         pthread_mutex_unlock(&mutex);
     }
     //std::cout << "exist function Index.." << std::endl;

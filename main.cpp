@@ -116,7 +116,7 @@ int main(int argc, char* argv[])
 
             SearchEngine* engine = new SearchEngine(voc, rvoc);
             engine->loadIndexes(id + ".out/index/");
-            engine->search_dir(con.query_desc, id + ".out/result", con.num_ret);
+            engine->search_dir(con.query_desc, id + ".out/result", id + ".out/coarse_result", con.num_ret);
 
             delete engine;
             delete voc;

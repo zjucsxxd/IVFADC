@@ -170,7 +170,7 @@ private:
         int* ownership = new int[n];
         float* cost_tmp = new float[n];
 
-        printf("debug:n= %d, nt=%d\n",n,nt);
+        //printf("debug:n= %d, nt=%d\n",n,nt);
         // begin iteration
         for(int iteration = 0; iteration < iter; iteration ++)
         {
@@ -182,7 +182,7 @@ private:
             for(int j = 0; j < n; j ++)
                 cost += cost_tmp[j];
 
-            printf("Iter: %d   Cost: %e\n", iteration, cost);
+            printf("Iter: %d   Cost: %.4f\n", iteration, cost);
 
             // re-calc centers
             memset(centers, 0, sizeof(float) * d * k);

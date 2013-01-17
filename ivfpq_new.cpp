@@ -89,9 +89,27 @@ void ivfpq_new::train_coarse_codebook()
         kmeans_par k_par = {data, n, d, coarsek, iter, attempts, nt, voc->vec};
         Clustering::kmeans(&k_par);
         coa_centroids = voc->vec;
+        cal_word_dis(voc->vec, coarsek, d, working_dir+"coarse_static.txt");
         voc->write2Disk(working_dir + "vk_words/");
         //IO::write_img_db(img_db, working_dir+"vk_words/wordlist.txt");
         delete[] data;
+}
+
+void ivfpq_new::cal_word_dis(float* codebook, int n_l, int dim_l, string filename)
+{
+    fstream fout;
+    fout.open(filename.c_str(), ios::out);
+    for(int i=0; i < n_l; i++ )
+    {
+        for(int j=0; j < n_l; j++)
+        {
+            float dist = Util::dist_l2_sq(codebook+i*dim_l, codebook+j*dim_l, dim_l);
+            fout << i << "\t" << j << "\t" << dist << "\n";
+            //std::cout << i << "\t" << j << "\t" << dist << "\n";
+        }
+    }
+    fout.close();
+
 }
 
 void ivfpq_new::train_residual_codebook()
@@ -137,6 +155,8 @@ void ivfpq_new::train_residual_codebook()
 
     kmeans_par k_par = {residual, n, d, k, iter, attempts, nt, voc->vec};
     Clustering::kmeans(&k_par);
+
+    cal_word_dis(voc->vec, k, d, working_dir+"residual_static.txt");
     /*
     for(int i = 0; i < l; i ++) // each layer [0, l-1], except layer l.
     {

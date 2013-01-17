@@ -108,12 +108,13 @@ void SearchEngine::loadIndexes(string dir)
 @return void
 @remark this function will search images under dir one by one
 */
-void SearchEngine::search_dir(string dir, string out_file, int topk)
+void SearchEngine::search_dir(string dir, string out_file, string out_file2, int topk)
 {
     printf("Online search.\n");
     //vector<string> filelist = IO::getFileList(dir, con.extn, 1, 1);
 
     FILE* fout_result = fopen(out_file.c_str(), "w");
+    FILE* fout_coarse_result = fopen(out_file2.c_str(), "w");
     IO::chkFileErr(fout_result, out_file);
 
     float* data;
@@ -147,27 +148,37 @@ void SearchEngine::search_dir(string dir, string out_file, int topk)
         for(int g=0; g < (con.ma); g++)
         {
             int coa_word_id = entrylist[word_pos+g].id;
+            float* coarse_res = voc->vec+(d*coa_word_id);
+            float tmp_dist = Util::dist_l2_sq(coarse_res, data+i*d, d);
 
-            std::cout << i+1 << " " << " coa_word: " << coa_word_id << "  " << filename  << "  ";
+            fprintf(fout_coarse_result, "%d  coarse_word: %d  distance: %.4f    %s ", i+1, coa_word_id, tmp_dist, filename.c_str());
+            //std::cout << i+1 << " " << " coa_word: " << coa_word_id << "  " << filename  << "  ";
             for(int f=0; f < num_entries[coa_word_id]; f++)
             {
                 // read result entries number. 
                 Result* tmp = new Result;
                 Entry res_tmp = (index[coa_word_id][f]);
-                std::cout << *(img_db[res_tmp.id]) << " ";
+                //std::cout << *(img_db[res_tmp.id]) << " ";
+
+
+                // output coarse quantize result.
+
+                fprintf(fout_coarse_result, "%s ", (img_db[res_tmp.id])->c_str());
+
                 // get result vector's residual vector.
                 float* res_residual = rvoc->vec+(d*res_tmp.residual_id);
 
 
-                Util::normalize(entrylist[word_pos+g].residual_vec, d);
-                Util::normalize(res_residual, d);
+                //Util::normalize(entrylist[word_pos+g].residual_vec, d);
+                //Util::normalize(res_residual, d);
                 tmp->score = Util::dist_l2_sq(entrylist[word_pos+g].residual_vec, res_residual, d);
                 //std::cout << "score: " << tmp->score << std::endl;
                 tmp->im_id = res_tmp.id; 
                 ret.push_back(tmp);
 
             }
-            std::cout << "\n";
+            //std::cout << "\n";
+            fprintf(fout_coarse_result, "\n");
         }
 
         std::sort(ret.begin(), ret.end(), Result::compare);
@@ -186,6 +197,7 @@ void SearchEngine::search_dir(string dir, string out_file, int topk)
 
     printf("\n");
 
+    fclose(fout_coarse_result);
     fclose(fout_result);
 }
 

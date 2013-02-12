@@ -17,7 +17,6 @@
 #include "Vocab.h"
 #include "IO.h"
 #include "entry.h"
-#include "HE.h"
 
 #include "MultiThd.h"
 

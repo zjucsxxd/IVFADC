@@ -22,8 +22,6 @@ Entry.o:
 	$(CC) $(CFLAGS) Entry.cpp
 Ivfpq_new.o:
 	$(CC) $(CFLAGS) ivfpq_new.cpp
-HE.o:
-	$(CC) $(CFLAGS) HE.cpp
 clean:
 	rm -rf $(OBJECTS)
 	rm -rf $(EXECUTABLE)

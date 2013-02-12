@@ -12,7 +12,6 @@
 
 #include "IO.h"
 #include "Vocab.h"
-#include "HE.h"
 #include "MultiThd.h"
 
 using std::string;
@@ -30,7 +29,6 @@ bool sort_by_val( const distance & lhs, const distance & rhs )
    return lhs.val < rhs.val;
 }
 
-class HE;
 
 /// arguments for mult-threading quantization 
 struct q_file_arg // quantization file args

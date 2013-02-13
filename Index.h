@@ -58,7 +58,7 @@ public:
     @return void
     */
 
-    static void indexFiles(Vocab* voc, PQCluster* rvoc, string feat_dir, string file_extn, string idx_dir, int nt, int w);
+    static void indexFiles(Vocab* voc, PQCluster* rvoc, string feat_dir, string file_extn, string idx_dir, int nt);
 private:
 
 	/**

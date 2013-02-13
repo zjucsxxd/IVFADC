@@ -47,7 +47,7 @@ struct Entry
 	*/
     ~Entry(){}
 
-    void set(unsigned int id_l, unsigned int nsq, unsigned int* residual_id_l);
+    void set(unsigned int id_l, unsigned int nsq_l, unsigned int* residual_id_l);
     void set(unsigned int id_l, unsigned int nsq, unsigned int* residual_id_l, float* residual_vec_l);
 	
     /**

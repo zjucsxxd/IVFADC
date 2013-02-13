@@ -24,9 +24,10 @@ Entry::Entry(const Entry& p) // copy constructor
     this->residual_id = p.residual_id;
 }
 
-void Entry::set(unsigned int id_l, unsigned int nsq, unsigned int* residual_id_l)
+void Entry::set(unsigned int id_l, unsigned int nsq_l, unsigned int* residual_id_l)
 {
     id = id_l;
+    nsq = nsq_l;
     residual_id = residual_id_l;
 }
 

@@ -85,7 +85,7 @@ void Index::index_task(void* args, int tid, int i, pthread_mutex_t& mutex)
 
     //std::cout << "construct entry list..." << std::endl;
     Entry* entrylist = new Entry;
-    entrylist[0].set(quanti_result, arguments->rvoc->getnsq(), residual_result);
+    entrylist[0].set(quanti_result, arguments->rvoc->get_nsq(), residual_result);
 
     //std::cout << "write sync to idx file..." << std::endl;
     /// write sync

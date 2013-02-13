@@ -143,7 +143,6 @@ void SearchEngine::search_dir(string dir, string out_file, string out_file2, int
         // for each res in entry list, get res vec accroding to inverted index.
         // iterator vectors in the word cell.
         // word_pos is the start word cell position for query i.
-        int m = 0;
         int word_pos = i*con.ma;
         for(int g=0; g < (con.ma); g++)
         {

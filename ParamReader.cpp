@@ -40,6 +40,7 @@ void CParamReader::ReadParamFile (string paramFileName)
 {
     string seps = "=", var;
     FILE* fin = fopen(paramFileName.c_str(), "r");
+    //FILE* fin = fopen("/Users/nebula/mylab/copyDetection/xcode_search/IVFADC/sample.config", "r");
     if (!fin)
         printf("Config file not found: %s\n", paramFileName.c_str());
 

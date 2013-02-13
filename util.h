@@ -59,7 +59,7 @@ public:
 	*/
     static int lastIndexOf(std::string str, char ch)
     {
-        for(int i = str.length()-1; i>0; i--)
+        for(unsigned int i = str.length()-1; i>0; i--)
         {
             if(str[i] == ch)
                 return i;
@@ -105,7 +105,7 @@ public:
 	*/
     static std::string strtok(std::string& str, std::string deli)
     {
-        int i = str.find_first_of(deli, 0);
+        unsigned int i = str.find_first_of(deli, 0);
 
         std::string ret = str.substr(0, i);
         str = str.substr(i+1, str.size()-i-1);
@@ -312,7 +312,7 @@ public:
             QueryPerformanceCounter((LARGE_INTEGER *) &time2);
         } while((time2-time1) < waitTime);
         */
-        sleep(waitTime/1000.0);
+        //sleep(waitTime/1000.0);
     }
 };
 

@@ -680,7 +680,7 @@ public:
         *d = dims;
         *data = new float[dims*total_num];
         int counter = 0;
-        int dsize = datalist.size();
+        unsigned int dsize = datalist.size();
         for(int g=0; g < dsize;g++ )
         {
             std::cout << info[g] << " " << std::endl;

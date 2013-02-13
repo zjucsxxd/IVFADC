@@ -9,6 +9,7 @@
 #include "config.h"
 #include "Index.h"
 #include "SearchEngine.h"
+#include "PQCluster.h"
 
 
 using std::string;
@@ -47,12 +48,10 @@ int main(int argc, char* argv[])
         {
             // number of centroids for the coarse quantizer.
             con.coarsek             = params->GetInt("coarsek");
-            /*
             // number of subquantizers to be used, m in the paper
             con.nsq = params->GetInt("nsq");
             // the number of bits per subquantizer
             con.nsqbits = params->GetInt("nsqbits");
-            */
 
             con.train_desc          = params->GetStr ("train_desc");
             con.dim                 = params->GetInt ("dim");
@@ -78,15 +77,18 @@ int main(int argc, char* argv[])
             con.index_desc          = params->GetStr("index_desc");
 
             con.bf                  = params->GetInt("bf");
+            con.nsq                 = params->GetInt("nsq");
+            con.nsqbits             = params->GetInt("nsqbits");
+            
             Vocab* voc = new Vocab(con.coarsek, 1, con.dim);
-            voc->loadFromDisk(id + ".out/vk_words/");
+            voc->loadFromDisk(id + "/vk_words/");
 
             std::cout << "con.bf:" << con.bf << std::endl;
-            Vocab* rvoc = new Vocab(con.bf, 1, con.dim);
-            rvoc->loadFromDisk(id + ".out/vk_words_residual/");
+            PQCluster* pqvoc = new PQCluster(con.nsqbits, con.nsq, con.dim);
+            pqvoc->loadFromDisk(id + "/vk_words_residual/");
 
-            IO::mkdir(id + ".out/index/");
-            Index::indexFiles(voc, rvoc, con.index_desc, ".vlad", id + ".out/index/" + id + "/", con.nt);
+            IO::mkdir(id + "/index/");
+            Index::indexFiles(voc, pqvoc, con.index_desc, ".vlad", id + "/index/", con.nt);
 
             delete voc;
             break;

@@ -24,13 +24,13 @@ Entry::Entry(const Entry& p) // copy constructor
     this->residual_id = p.residual_id;
 }
 
-void Entry::set(unsigned int id_l, unsigned int residual_id_l)
+void Entry::set(unsigned int id_l, unsigned int nsq, unsigned int* residual_id_l)
 {
     id = id_l;
     residual_id = residual_id_l;
 }
 
-void Entry::set(unsigned int id_l, unsigned int residual_id_l, float* residual_vec_l)
+void Entry::set(unsigned int id_l, unsigned int nsq, unsigned int* residual_id_l, float* residual_vec_l)
 {
     id = id_l;
     residual_id = residual_id_l;
@@ -42,7 +42,11 @@ void Entry::set(unsigned int id_l, unsigned int residual_id_l, float* residual_v
 */
 void Entry::print()
 {
-    printf("%u %u\n", id, residual_id);
+    printf("coarse:%u \n", id);
+    for(unsigned int i = 0; i < nsq; i++)
+    {
+        printf("residual:%u ",residual_id[i]);
+    }
 }
 
 /**
@@ -51,11 +55,14 @@ void Entry::print()
 */
 void Entry::write(FILE* fout)
 {
-    unsigned int* items = new unsigned int[2];
+    unsigned int* items = new unsigned int[nsq+1];
     items[0] = id;
-    items[1] = residual_id;
+    for(unsigned int i = 0; i < nsq; i++)
+    {
+        items[i+1] = residual_id[i];
+    }
 
-    fwrite(items, sizeof(unsigned int), 2, fout);
+    fwrite(items, sizeof(unsigned int), nsq+1, fout);
 
     delete[] items;
 }
@@ -66,11 +73,15 @@ void Entry::write(FILE* fout)
 */
 void Entry::read(FILE* fin)
 {
-    unsigned int *items = new unsigned int[2];
-    assert(2 == fread(items, sizeof(unsigned int), 2, fin));
+    unsigned int *items = new unsigned int[nsq+1];
+    assert(nsq+1 == fread(items, sizeof(unsigned int), nsq+1, fin));
 
     id     = items[0];
-    residual_id = items[1];
+    residual_id = new unsigned int[nsq];
+    for(unsigned int i = 0; i < nsq; i++)
+    {
+        residual_id[i] = items[i+1];
+    }
 
     delete[] items;
 }

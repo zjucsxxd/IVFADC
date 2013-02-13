@@ -15,8 +15,6 @@
 
 using std::string;
 
-class HE;
-
 
 /// class for hierarchical visual words (vocabulary) 
 class Vocab

@@ -27,7 +27,8 @@ struct Entry
 {
     /// id of entry is tricky here. serves as both id and word_id
     unsigned int id:32;          // id. taking 32 bits can index up to 4 trillion images
-    unsigned int residual_id;
+    unsigned int nsq;
+    unsigned int* residual_id;
     // this is the residual vector of a vector quantize to a coarse word. 
     float*       residual_vec;
 
@@ -46,8 +47,8 @@ struct Entry
 	*/
     ~Entry(){}
 
-    void set(unsigned int id_l, unsigned int residual_id_l);
-    void set(unsigned int id_l, unsigned int residual_id_l, float* residual_vec_l);
+    void set(unsigned int id_l, unsigned int nsq, unsigned int* residual_id_l);
+    void set(unsigned int id_l, unsigned int nsq, unsigned int* residual_id_l, float* residual_vec_l);
 	
     /**
     @brief print the content of the entry to stdout

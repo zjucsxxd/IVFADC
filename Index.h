@@ -17,7 +17,7 @@
 #include "Vocab.h"
 #include "IO.h"
 #include "entry.h"
-
+#include "PQCluster.h"
 #include "MultiThd.h"
 
 using std::string;
@@ -34,11 +34,12 @@ struct index_args
     vector<string*>& namelist;   
     /// vocabulary used to quantize feature
     Vocab* voc;                 
-    Vocab* rvoc;
+    PQCluster* rvoc;
     /// file to write the index
     FILE* fout_idx;             
     /// file to write the name list
-    FILE* fout_nl;              
+    FILE* fout_nl;
+    int     w;
 };
 
 
@@ -57,7 +58,7 @@ public:
     @return void
     */
 
-    static void indexFiles(Vocab* voc, Vocab* rvoc, string feat_dir, string file_extn, string idx_dir, int nt);
+    static void indexFiles(Vocab* voc, PQCluster* rvoc, string feat_dir, string file_extn, string idx_dir, int nt, int w);
 private:
 
 	/**

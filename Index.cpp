@@ -2,7 +2,7 @@
 #include <fstream>
 using std::fstream;
 
-void Index::indexFiles(Vocab* voc, Vocab* rvoc, string feat_dir, string file_extn, string idx_dir, int nt)
+void Index::indexFiles(Vocab* voc, PQCluster* rvoc, string feat_dir, string file_extn, string idx_dir, int nt)
 {
     IO::mkdir(idx_dir);
     string idx_file = idx_dir + "idx";
@@ -64,8 +64,8 @@ void Index::index_task(void* args, int tid, int i, pthread_mutex_t& mutex)
 
     //std::cout << "m:" << m << "n:" << n << "d:" << d << std::endl;
 
-    int* quanti_result = new int[n];
-    int* residual_result = new int[n];
+    int* quanti_result = new int;
+    int* residual_result;
 
     //std::cout << "quantize coarse vector..." << std::endl;
     arguments->voc->quantize2leaf(feature, quanti_result, n, m);
@@ -81,14 +81,11 @@ void Index::index_task(void* args, int tid, int i, pthread_mutex_t& mutex)
     }
 
     //std::cout << "quantize residual vector..." << std::endl;
-    arguments->rvoc->quantize2leaf(residual_vec, residual_result, n, m);
+    arguments->rvoc->quantize2leaf(residual_vec, residual_result, n);
 
     //std::cout << "construct entry list..." << std::endl;
-    Entry* entrylist = new Entry[n];
-    for(int j = 0; j < n; j++)
-    {
-        entrylist[j].set(quanti_result[j], residual_result[j]);
-    }
+    Entry* entrylist = new Entry;
+    entrylist[0].set(quanti_result, arguments->rvoc->getnsq(), residual_result);
 
     //std::cout << "write sync to idx file..." << std::endl;
     /// write sync
@@ -148,7 +145,7 @@ void Index::gen_idx_sz_file(string idx_file, string idx_sz, int voc_size)
 
 
     int* sz = new int[voc_size];
-    for(int i = 0; i < voc_size; i++)
+    for(unsigned int i = 0; i < voc_size; i++)
         sz[i] = index[i].size();
 
     IO::writeMat(sz, voc_size, 1, idx_sz);

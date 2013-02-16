@@ -371,9 +371,9 @@ public:
     */
     static void rm(string file)
     {
-        replace(file.begin(), file.end(), '/', '\\');
+        //replace(file.begin(), file.end(), '/', '\\');
         if(f_exists(file)) // if file exists
-            Util::exec("del \"" + file + "\"");
+            Util::exec("rm " + file);
     }
 
 

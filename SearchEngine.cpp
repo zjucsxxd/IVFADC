@@ -53,7 +53,7 @@ struct norm_args
 extern Config con;
 
 /// init variables
-SearchEngine::SearchEngine(Vocab* vocab, Vocab* rvocab)
+SearchEngine::SearchEngine(Vocab* vocab, PQCluster* rvocab)
 {
     this->voc = vocab;
     this->rvoc = rvocab;
@@ -94,6 +94,7 @@ SearchEngine::~SearchEngine()
 void SearchEngine::loadIndexes(string dir)
 {
     idxList = IO::getFolders(dir);
+    cout << dir << " " << idxList.size() << endl;
     for(unsigned int i = 0; i < idxList.size(); i++) // load all indexes under dir
         loadSingleIndex(idxList[i]);
     // update other fields: idf, norms
@@ -119,8 +120,8 @@ void SearchEngine::search_dir(string dir, string out_file, string out_file2, int
 
     float* data;
     int n=0, d=0;
-    vector<string*> img_db;
-    IO::load_vlad(dir, &data, &img_db, &n, &d);
+    vector<string*> query_db;
+    IO::load_vlad(dir, &data, &query_db, &n, &d);
     std::cout << "normalize..." << std::endl;
     for(int i=0; i < n; i++)
     {
@@ -136,7 +137,8 @@ void SearchEngine::search_dir(string dir, string out_file, string out_file2, int
     vector<Result*> ret;
     for(unsigned int i = 0; i < n; i++)//loop for every query im in directory
     {
-        string filename = *(img_db[i]);
+        //std::cout << "i: " << i << std::endl;
+        string filename = *(query_db[i]);
         fprintf(fout_result, "%s", filename.c_str());
 
         // result entry for coarse search.
@@ -157,19 +159,28 @@ void SearchEngine::search_dir(string dir, string out_file, string out_file2, int
                 // read result entries number. 
                 Result* tmp = new Result;
                 Entry res_tmp = (index[coa_word_id][f]);
-                //std::cout << *(img_db[res_tmp.id]) << " ";
+                //std::cout << im_db[res_tmp.id] << " ";
 
 
                 // output coarse quantize result.
 
-                fprintf(fout_coarse_result, "%s ", (img_db[res_tmp.id])->c_str());
+                fprintf(fout_coarse_result, "%s ", (im_db[res_tmp.id]).c_str());
 
                 // get result vector's residual vector.
-                float* res_residual = rvoc->vec+(d*res_tmp.residual_id);
+                float* res_residual = new float[rvoc->get_nsq()*rvoc->get_ds()];
+                int counter = 0;
+                for(int x=0; x < rvoc->get_nsq(); x++)
+                {
+                    float* subcenter = rvoc->subvec(x)+(rvoc->get_ds()*res_tmp.residual_id[x]);
+                    for(int e = 0; e < rvoc->get_ds(); e++)
+                    {
+                        res_residual[counter++] = subcenter[e];
+                    }
+                }
 
 
-                //Util::normalize(entrylist[word_pos+g].residual_vec, d);
-                //Util::normalize(res_residual, d);
+                Util::normalize(entrylist[word_pos+g].residual_vec, d);
+                Util::normalize(res_residual, d);
                 tmp->score = Util::dist_l2_sq(entrylist[word_pos+g].residual_vec, res_residual, d);
                 //std::cout << "score: " << tmp->score << std::endl;
                 tmp->im_id = res_tmp.id; 
@@ -183,7 +194,7 @@ void SearchEngine::search_dir(string dir, string out_file, string out_file2, int
         std::sort(ret.begin(), ret.end(), Result::compare);
         for(vector<Result*>::iterator it = ret.begin(); it != min(ret.end(), ret.begin()+topk); it++)
         {
-            fprintf(fout_result, " %s %.4f ", (img_db[(*it)->im_id])->c_str(), (*it)->score);
+            fprintf(fout_result, " %s %.6f ", (im_db[(*it)->im_id]).c_str(), (*it)->score);
         }
         fprintf(fout_result, "\n");
 
@@ -260,7 +271,7 @@ void SearchEngine::loadSingleIndex(string dir)
     assert( 1 == fread(&tot_ims_new, sizeof(int), 1, fin_idx) );
     assert(tot_ims_new == tot_ims - tot_ims_old);
 
-    Entry* entry = new Entry();
+    Entry* entry = new Entry(con.nsq);
     for(int i = tot_ims_old; i < tot_ims_new + tot_ims_old; i++)
     {
         int n; // number of points on image-i

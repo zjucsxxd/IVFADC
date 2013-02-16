@@ -57,8 +57,6 @@ int main(int argc, char* argv[])
             con.dim                 = params->GetInt ("dim");
             con.iter                = params->GetInt ("iter");
             con.attempts            = params->GetInt ("attempts");
-            con.bf                  = params->GetInt("bf");
-            con.num_layer           = params->GetInt("num_layer");
 
             //con.coarsek             = params->GetInt("coarsek");
             //Vocab* voc = new Vocab(con.coarsek, 1, con.dim);
@@ -76,19 +74,18 @@ int main(int argc, char* argv[])
             // index feature dir
             con.index_desc          = params->GetStr("index_desc");
 
-            con.bf                  = params->GetInt("bf");
             con.nsq                 = params->GetInt("nsq");
             con.nsqbits             = params->GetInt("nsqbits");
             
             Vocab* voc = new Vocab(con.coarsek, 1, con.dim);
             voc->loadFromDisk(id + "/vk_words/");
 
-            std::cout << "con.bf:" << con.bf << std::endl;
             PQCluster* pqvoc = new PQCluster(con.nsqbits, con.nsq, con.dim);
             pqvoc->loadFromDisk(id + "/vk_words_residual/");
+            //pqvoc->print_clusters();
 
             IO::mkdir(id + "/index/");
-            Index::indexFiles(voc, pqvoc, con.index_desc, ".vlad", id + "/index/", con.nt);
+            Index::indexFiles(voc, pqvoc, con.index_desc, ".vlad", id + "/index/", con.nt,con.coarsek);
 
             delete voc;
             break;
@@ -96,29 +93,26 @@ int main(int argc, char* argv[])
         case 3: // online search
         {
             con.coarsek             = params->GetInt("coarsek");
+            con.nsq                 = params->GetInt("nsq");
+            con.nsqbits             = params->GetInt("nsqbits");
             con.query_desc          = params->GetStr ("query_desc");
             con.dim                 = params->GetInt ("dim");
-            con.bf                  = params->GetInt ("bf");
-            con.num_layer           = params->GetInt ("num_layer");
+
             // number of elements to be returned.
             con.num_ret             = params->GetInt ("num_ret");
             // number of cell visited per query.
             con.ma                  = params->GetInt ("ma");
 
-            // loading coarse codebook.
             Vocab* voc = new Vocab(con.coarsek, 1, con.dim);
-            voc->loadFromDisk(id + ".out/vk_words/");
-            //for(int i =0; i < voc->num_leaf*con.dim; i++)
-            //    std::cout << voc->vec[i] << " ";
-            // loading residual codebook
-            Vocab* rvoc = new Vocab(con.bf, 1, con.dim);
-            rvoc->loadFromDisk(id + ".out/vk_words_residual/");
-            //for(int i =0; i < rvoc->num_leaf*con.dim; i++)
-            //    std::cout << rvoc->vec[i] << " ";
+            voc->loadFromDisk(id + "/vk_words/");
+            
+            PQCluster* pqvoc = new PQCluster(con.nsqbits, con.nsq, con.dim);
+            pqvoc->loadFromDisk(id + "/vk_words_residual/");
+            //pqvoc->print_clusters()
 
-            SearchEngine* engine = new SearchEngine(voc, rvoc);
-            engine->loadIndexes(id + ".out/index/");
-            engine->search_dir(con.query_desc, id + ".out/result", id + ".out/coarse_result", con.num_ret);
+            SearchEngine* engine = new SearchEngine(voc, pqvoc);
+            engine->loadIndexes(id + "index/");
+            engine->search_dir(con.query_desc, id + "result", id + "coarse_result", con.num_ret);
 
             delete engine;
             delete voc;

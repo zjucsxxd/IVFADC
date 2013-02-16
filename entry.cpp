@@ -21,6 +21,8 @@
 Entry::Entry(const Entry& p) // copy constructor
 {
     this->id        = p.id;
+    this->nsq       = p.nsq;
+    this->residual_vec = p.residual_vec;
     this->residual_id = p.residual_id;
 }
 
@@ -31,10 +33,10 @@ void Entry::set(unsigned int id_l, unsigned int nsq_l, unsigned int* residual_id
     residual_id = residual_id_l;
 }
 
-void Entry::set(unsigned int id_l, unsigned int nsq, unsigned int* residual_id_l, float* residual_vec_l)
+void Entry::set(unsigned int id_l, unsigned int nsq_l, float* residual_vec_l)
 {
     id = id_l;
-    residual_id = residual_id_l;
+    nsq = nsq_l;
     residual_vec = residual_vec_l;
 }
 
@@ -46,8 +48,9 @@ void Entry::print()
     printf("coarse:%u \n", id);
     for(unsigned int i = 0; i < nsq; i++)
     {
-        printf("residual:%u ",residual_id[i]);
+        printf("%u ",residual_id[i]);
     }
+    printf("\n");
 }
 
 /**

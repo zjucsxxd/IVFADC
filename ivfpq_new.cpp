@@ -16,8 +16,6 @@ ivfpq_new::ivfpq_new( Config& con_l )
     attempts = con_l.attempts;
     nt = con_l.nt;
     limit_point = con_l.T;
-    k = con_l.bf;
-    l = con_l.num_layer;
     dataId = con_l.dataId;
     train_desc = con_l.train_desc;
     nsq = con_l.nsq;
@@ -80,6 +78,7 @@ void ivfpq_new::train_coarse_codebook()
     IO::load_vlad(train_desc, &data, &img_db, &n, &d);
     std::cout << "load vlad over." << std::endl;
     
+    
     std::cout << "normalize..." << std::endl;
     for(int i=0; i < n; i++)
     {
@@ -87,6 +86,7 @@ void ivfpq_new::train_coarse_codebook()
     }
     std::cout << "normalize finished..." << std::endl;
     
+     
     Vocab* voc = new Vocab(coarsek, 1, d); // new the location to keep the centers
     kmeans_par k_par = {data, n, d, coarsek, iter, attempts, nt, voc->vec};
     Clustering::kmeans(&k_par);
@@ -99,10 +99,17 @@ void ivfpq_new::train_coarse_codebook()
 
 void ivfpq_new::cal_word_dis(float* codebook, int n_l, int dim_l, string filename)
 {
-    fstream fout;
+    fstream fout, fout2;
     fout.open(filename.c_str(), ios::out);
+    fout2.open("/Users/nebula/mylab/copyDetection/xcode_search/IVFADC4/test.out/coarse_codebook.txt", ios::out);
+    
     for(int i=0; i < n_l; i++ )
     {
+        for(int m=0; m < dim_l; m++)
+        {
+            fout2 << *(codebook+i*dim_l+m) << " ";
+        }
+        fout2 << "\r\n" << endl;
         for(int j=0; j < n_l; j++)
         {
             float dist = Util::dist_l2_sq(codebook+i*dim_l, codebook+j*dim_l, dim_l);
@@ -120,26 +127,34 @@ void ivfpq_new::train_residual_codebook()
     int  n = 0, d = 0; // row & col of the matrix file
     string working_dir = dataId;
     //IO::genMtrx (train_desc, mtrx, ptsPerCenter*ROUND(pow(k, l)));
-    //float* data = IO::loadFMat(working_dir + "matrix/M.l0.n0", n, d, con.T);
-    
+    //float* data = IO::loadFMat(working_dir + "matrix/M.l0.n0", n, d, con.T);    
     
     float* data;
     vector<string*> img_db;
     IO::load_vlad(train_desc, &data, &img_db, &n, &d);
+    
+    fstream fout3;
+    fout3.open("/Users/nebula/mylab/copyDetection/xcode_search/IVFADC4/test.out/vlad_vector.txt", ios::out);
     std::cout << "normalize..." << std::endl;
     for(int i=0; i < n; i++)
     {
         Util::normalize(data+i*d, d);
+        for(int x=0; x<d;x++)
+        {
+            fout3 << *(data+i*d+x) << " ";
+        }
+        fout3 << "\r\n";
     }
+    fout3.close();
     std::cout << "normalize finished..." << std::endl;
+     
     
     
-    // do knn, assign the descriptors to cluster
-    
+    // do knn, assign the descriptors to cluster    
     int* ownership = new int[n];
     float* cost_tmp = new float[n];
     float* residual = new float[n*d];
-    nn_par2 ti = {coa_centroids, data, k, d, ownership, cost_tmp, iter, residual};
+    nn_par2 ti = {coa_centroids, data, coarsek, d, ownership, cost_tmp, iter, residual};
     MultiThd::compute_tasks(n, nt, &Clustering::nn_task2, &ti);
     delete[] data;
     
@@ -150,19 +165,36 @@ void ivfpq_new::train_residual_codebook()
     int ks = ROUND(pow(2,nsqbits));
     int ds = d/nsq; // dimension of the subvectors to quantize.
     float *subdata = new float[ds*n];
+    fstream fout, fout2;
+    fout.open("/Users/nebula/mylab/copyDetection/xcode_search/IVFADC4/test.out/residual_vector.txt", ios::out);
+    fout2.open("/Users/nebula/mylab/copyDetection/xcode_search/IVFADC4/test.out/residual_codebook.txt", ios::out);
     for(int i = 0; i < nsq; i++)
     {
+        fout << "nsq: " << i << endl;
         for(int j = 0; j< n; j++)
         {
+            fout << "n: " << j << endl;
             for(int k = 0; k < ds; k++)
             {
                 subdata[j*ds+k] = residual[j*d+i*ds+k];
+                fout << subdata[j*ds+k] << " ";
             }
+            fout << "\n"; 
         }
         kmeans_par k_par = {subdata, n, ds, ks, iter, attempts, nt, pqvoc->subvec(i)};
         Clustering::kmeans(&k_par);
         pqvoc->write2Disk(working_dir + "vk_words_residual/", i);
+        fout2 << "nsq: " << i << endl;
+        for (int g=0;g<ks;g++)
+        {
+            for(int x=0; x < ds; x++)
+            {
+                fout2 << *(pqvoc->subvec(i)+x+g*ds) << " ";
+            }
+            fout2 << "\r\n";
+        }
     }
+    pqvoc->print_clusters();
 
     delete[] residual;
 }

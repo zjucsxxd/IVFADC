@@ -25,9 +25,11 @@ public:
     void write2Disk(string centroids_dir, int i);
     void loadFromDisk(string centroids_dir);
     void quantize2leaf(float* voc, int* result, int n);
-    void quantize_once(float* vec, int* out);
-    
-    int get_nsq();
+    void quantize_once(float* vec, int* out, int nsq_num);
+    void print_clusters();
+    unsigned int get_nsq();
+    int get_ds(){return ds;}
+    int get_ks(){return ks;}
     ~PQCluster();
 };
 

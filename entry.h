@@ -36,7 +36,8 @@ struct Entry
 	@ default constructor which does nothing but allocates memory.
 	*/
     Entry(){} // does nothing constructor
-
+    Entry(int id_l, int nsq_l){id = id_l; nsq = nsq_l;}
+    Entry(int nsq_l){nsq = nsq_l;}
     /**
     @brief cpy constructor
     */
@@ -48,7 +49,7 @@ struct Entry
     ~Entry(){}
 
     void set(unsigned int id_l, unsigned int nsq_l, unsigned int* residual_id_l);
-    void set(unsigned int id_l, unsigned int nsq, unsigned int* residual_id_l, float* residual_vec_l);
+    void set(unsigned int id_l, unsigned int nsq_l, float* residual_vec_l);
 	
     /**
     @brief print the content of the entry to stdout

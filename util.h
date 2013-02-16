@@ -237,8 +237,8 @@ public:
         float dist = 0.0f;
         for(int i = 0; i<d; i++)
         {
-            dist += (a[i] - b[i])*(a[i] - b[i]);
             //std::cout << dist << std::endl;
+            dist += (a[i] - b[i])*(a[i] - b[i]);
         }
 
         return dist;

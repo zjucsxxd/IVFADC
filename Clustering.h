@@ -119,9 +119,6 @@ public:
         float dist_best = 1e100;
         for(int m = 0; m < t->k; m++) // loop for k centers, decides the nearest one
         {
-            // print process cluster number per 100.
-            //if(m%1000 == 0)
-            //printf("iterator times:%d thread:%d centors:%d process %d clusters dist.\n", t->iterator, tid,t->k, m);
             float dist = Util::dist_l2_sq(t->centers + m*t->d, t->data + i*t->d, t->d);
             if(dist < dist_best)
             {
@@ -169,7 +166,7 @@ private:
 
         int* ownership = new int[n];
         float* cost_tmp = new float[n];
-
+        float old_cost = 0;
         //printf("debug:n= %d, nt=%d\n",n,nt);
         // begin iteration
         for(int iteration = 0; iteration < iter; iteration ++)
@@ -183,7 +180,12 @@ private:
                 cost += cost_tmp[j];
 
             printf("Iter: %d   Cost: %.4f\n", iteration, cost);
-
+            if(abs(cost - old_cost) < 0.000001)
+            {
+                printf("cost not changed.\n");
+                break;
+            }
+            old_cost = cost;
             // re-calc centers
             memset(centers, 0, sizeof(float) * d * k);
             for(int i = 0; i<k; i++) // each center
@@ -202,17 +204,19 @@ private:
                         }
                     }
                 }
-
-                for(int j = 0; j<d; j++)
+                if (cnt != 0)
                 {
-                    centers[i*d + j] /= cnt;
+                    for(int j = 0; j<d; j++)
+                    {
+                        centers[i*d + j] /= cnt;
+                    }
                 }
             }
 
         }// end of iteration
 
-        //delete[] cost_tmp;
-        //delete[] ownership;
+        delete[] cost_tmp;
+        delete[] ownership;
     }
 
     

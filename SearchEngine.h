@@ -12,6 +12,7 @@
 #include <set>
 #include <algorithm>
 
+#include "PQCluster.h"
 #include "Vocab.h"
 #include "IO.h"
 #include "result.h"
@@ -28,7 +29,7 @@ public:
 
 	/// pointer to the vocabulary using
     Vocab* voc;
-    Vocab* rvoc;
+    PQCluster* rvoc;
 
 	/// keeps different index directories. This implementaion can load multiple indexes when searching.
     vector<string> idxList;
@@ -46,7 +47,7 @@ public:
     float* norm;
 
 	/// init variables
-    SearchEngine(Vocab* vocab, Vocab* rvocab);
+    SearchEngine(Vocab* vocab, PQCluster* rvocab);
 
 	///deletes things newed
     ~SearchEngine();

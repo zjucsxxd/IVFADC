@@ -107,17 +107,13 @@ void Vocab::quantize2leaf(float* v, int* out, int n, int m)
 
 static void quanti_task(void* args, int tid, int i, pthread_mutex_t& mutex)
 {
-    //std::cout << "enter quanti task function." << std::endl;
     q_file_arg* t = (q_file_arg*) args;
 
     int* out = new int[t->ma];
     //int* residual_out = new int[t->ma];
-    int pos = i* (t->d + t->m);
-
-    //std::cout << "start quantize2leaf" << std::endl;
+    int pos = i* (t->d);
     // assign feat descriptors to coarse codebook
-    t->voc->quantize2leaf(t->feat+pos, out, 1, t->m, t->ma);
-    //std::cout << "end quantize2leaf" << std::endl;
+    t->voc->quantize2leaf(t->feat+pos, out, 1, 0, t->ma);
 
     for(int m = 0; m < t->ma; m++)
     {
@@ -125,9 +121,9 @@ static void quanti_task(void* args, int tid, int i, pthread_mutex_t& mutex)
         float* residual = new float[t->d];
         for(int j=0; j < t->d; j++)
         {
-            residual[j] = *(t->feat+pos+j) - *(t->voc->vec+out[m]*(t->m+t->d)+j);
+            residual[j] = *(t->feat+pos+j) - *(t->voc->vec+out[m]*(t->d)+j);
         }
-        t->entrylist[idx].set( out[m], -1, residual);
+        t->entrylist[idx].set( out[m], con.nsq, residual);
     }
 
     delete[] out;

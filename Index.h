@@ -58,7 +58,7 @@ public:
     @return void
     */
 
-    static void indexFiles(Vocab* voc, PQCluster* rvoc, string feat_dir, string file_extn, string idx_dir, int nt);
+    static void indexFiles(Vocab* voc, PQCluster* rvoc, string feat_dir, string file_extn, string idx_dir, int nt, int coarsek );
 private:
 
 	/**
@@ -69,6 +69,6 @@ private:
 	/**
 	@brief generate aux files for the index
 	*/
-    static void gen_idx_sz_file(string idx_file, string idx_sz, int voc_size);
+    static void gen_idx_sz_file(string idx_file, string idx_sz, int voc_size, int nsq);
 };
 #endif // INDEX_H_INCLUDED

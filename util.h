@@ -165,6 +165,8 @@ public:
     static void normalize(T* vec, int size)
     {
         float norm = Util::l2_norm(vec, size);
+        if(norm<0.0000001)
+            return;
         for(int i = 0; i<size; i++)
             vec[i] /= norm;
     }

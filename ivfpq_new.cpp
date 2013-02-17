@@ -101,7 +101,7 @@ void ivfpq_new::cal_word_dis(float* codebook, int n_l, int dim_l, string filenam
 {
     fstream fout, fout2;
     fout.open(filename.c_str(), ios::out);
-    fout2.open("/Users/nebula/mylab/copyDetection/xcode_search/IVFADC4/test.out/coarse_codebook.txt", ios::out);
+    fout2.open(dataId+"coarse_codebook.txt", ios::out);
     
     for(int i=0; i < n_l; i++ )
     {
@@ -134,7 +134,7 @@ void ivfpq_new::train_residual_codebook()
     IO::load_vlad(train_desc, &data, &img_db, &n, &d);
     
     fstream fout3;
-    fout3.open("/Users/nebula/mylab/copyDetection/xcode_search/IVFADC4/test.out/vlad_vector.txt", ios::out);
+    fout3.open(dataId+"vlad_vector.txt", ios::out);
     std::cout << "normalize..." << std::endl;
     for(int i=0; i < n; i++)
     {
@@ -166,8 +166,8 @@ void ivfpq_new::train_residual_codebook()
     int ds = d/nsq; // dimension of the subvectors to quantize.
     float *subdata = new float[ds*n];
     fstream fout, fout2;
-    fout.open("/Users/nebula/mylab/copyDetection/xcode_search/IVFADC4/test.out/residual_vector.txt", ios::out);
-    fout2.open("/Users/nebula/mylab/copyDetection/xcode_search/IVFADC4/test.out/residual_codebook.txt", ios::out);
+    fout.open(dataId+"residual_vector.txt", ios::out);
+    fout2.open(dataId+"residual_codebook.txt", ios::out);
     for(int i = 0; i < nsq; i++)
     {
         fout << "nsq: " << i << endl;
@@ -194,7 +194,7 @@ void ivfpq_new::train_residual_codebook()
             fout2 << "\r\n";
         }
     }
-    pqvoc->print_clusters();
+    //pqvoc->print_clusters();
 
     delete[] residual;
 }

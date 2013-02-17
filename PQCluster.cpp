@@ -7,7 +7,7 @@
 //
 
 #include "PQCluster.h"
-#include <cmath>
+//#include <cmath>
 #include <iostream>
 #include "entry.h"
 #include "util.h"
@@ -15,7 +15,7 @@
 
 PQCluster::PQCluster(int nsqbits_l, int nsq_l, int d)
 {
-    ks = ROUND(pow(2,nsqbits_l));
+    ks = ROUND(pow(2.0,(double)nsqbits_l));
     ds = d/nsq_l;
     nsq = nsq_l;
     clusters = new float[ks*ds*nsq_l];

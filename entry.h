@@ -10,7 +10,7 @@
 
 
 #define PI 3.1415926
-#define ROUND(d) ((unsigned int)(floor(d+0.5)))
+#define ROUND(d) ((unsigned int)(double(d+0.5)))
 
 #include <cmath>
 #include <cstdio>

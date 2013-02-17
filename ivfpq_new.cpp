@@ -6,6 +6,7 @@
 #include "PQCluster.h"
 #include <iostream>
 #include <vector>
+#include <math.h>
 
 using std::vector;
 ivfpq_new::ivfpq_new( Config& con_l )
@@ -101,7 +102,8 @@ void ivfpq_new::cal_word_dis(float* codebook, int n_l, int dim_l, string filenam
 {
     fstream fout, fout2;
     fout.open(filename.c_str(), ios::out);
-    fout2.open(dataId+"coarse_codebook.txt", ios::out);
+    string coarse_codebook_dir = dataId+"coarse_codebook.txt";
+    fout2.open(coarse_codebook_dir.c_str(), ios::out);
     
     for(int i=0; i < n_l; i++ )
     {
@@ -134,7 +136,8 @@ void ivfpq_new::train_residual_codebook()
     IO::load_vlad(train_desc, &data, &img_db, &n, &d);
     
     fstream fout3;
-    fout3.open(dataId+"vlad_vector.txt", ios::out);
+    string  vlad_vector_dir = dataId+"vlad_vector.txt";
+    fout3.open(vlad_vector_dir.c_str(), ios::out);
     std::cout << "normalize..." << std::endl;
     for(int i=0; i < n; i++)
     {
@@ -162,12 +165,14 @@ void ivfpq_new::train_residual_codebook()
     std::cout << "residual k:" << k << std::endl;
     // number of centers per subquantizer
     PQCluster* pqvoc = new PQCluster(nsqbits, nsq, d);
-    int ks = ROUND(pow(2,nsqbits));
+    int ks = ROUND(pow(2.0,(double)(nsqbits)));
     int ds = d/nsq; // dimension of the subvectors to quantize.
     float *subdata = new float[ds*n];
     fstream fout, fout2;
-    fout.open(dataId+"residual_vector.txt", ios::out);
-    fout2.open(dataId+"residual_codebook.txt", ios::out);
+    string residual_vec_dir = dataId+"residual_vector.txt";
+    string residual_codebook_dir = dataId+"residual_codebook.txt";
+    fout.open(residual_vec_dir.c_str(), ios::out);
+    fout2.open(residual_codebook_dir.c_str(), ios::out);
     for(int i = 0; i < nsq; i++)
     {
         fout << "nsq: " << i << endl;

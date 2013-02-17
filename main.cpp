@@ -85,7 +85,8 @@ int main(int argc, char* argv[])
             //pqvoc->print_clusters();
 
             IO::mkdir(id + "/index/");
-            Index::indexFiles(voc, pqvoc, con.index_desc, ".vlad", id + "/index/", con.nt,con.coarsek);
+            IO::mkdir(id + "/index/test/");
+            Index::indexFiles(voc, pqvoc, con.index_desc, ".vlad", id + "/index/test/", con.nt,con.coarsek);
 
             delete voc;
             break;
